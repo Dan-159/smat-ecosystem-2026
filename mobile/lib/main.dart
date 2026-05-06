@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'services/api_service.dart';
 import 'models/estacion.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_page.dart';
+import 'services/auth_service.dart';
+
 
 void main() => runApp(const SMATApp());
 
@@ -9,7 +13,27 @@ class SMATApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: HomePage(), debugShowCheckedModeBanner: false);
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'SMAT Mobile',
+      // El home ahora depende de la verificación del token
+      home: FutureBuilder(
+        future: AuthService().getToken(),
+        builder: (context, snapshot) {
+          // Mientras verifica, muestra un indicador de carga
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          // Si el token existe, va al Home, si no, al Login
+          if (snapshot.hasData && snapshot.data != null) {
+            return const HomePage();
+          }
+          return const LoginScreen();
+        },
+      ),
+    );
   }
 }
 
